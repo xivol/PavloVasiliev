@@ -19,9 +19,10 @@ player_pos = [50, 50]
 
 walls = [
     pygame.Rect(0, 0, 800, 20),
-    pygame.Rect(100, 100, 20, 400),
-    pygame.Rect(680, 0, 20, 400),
-    pygame.Rect(100, 480, 600, 20),
+    pygame.Rect(100, 0, 20, 400),
+    pygame.Rect(680, 0, 20, 500),
+    pygame.Rect(0, 480, 300, 20),
+    pygame.Rect(400, 480, 300, 20),
     pygame.Rect(300, 300, 20, 200),
     pygame.Rect(300, 300, 200, 20),
 ]
@@ -78,7 +79,7 @@ def level_1():
         if player_rect.colliderect(end_point):
             screen.fill((0, 128, 0))
             font = pygame.font.Font(None, 74)
-            text = font.render("Вы победили!", True, (255, 255, 255))
+            text = font.render("You are alive", True, (255, 255, 255))
             text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
             screen.blit(text, text_rect)
             pygame.display.flip()
