@@ -3,8 +3,8 @@ import random
 import time
 import os
 import sys
-from level_1 import level_1
-
+from enviroment import ENV
+import level_1
 
 def load_image(filename):
     try:
@@ -15,28 +15,22 @@ def load_image(filename):
         sys.exit()
 
 
-if __name__ == '__main__':
-    pygame.init()
-    size = width, height = 800, 600
-    screen = pygame.display.set_mode(size)
+def draw(screen):
+    screen.fill((0, 0, 0))
+    font = pygame.font.Font(None, 50)
+    text = font.render("Welcome to hell!", True, (255, 0, 0))
+    text_x = width // 2 - text.get_width() // 2
+    text_y = height // 2 - text.get_height() // 2
+    screen.blit(text, (text_x, text_y))
 
 
-    def draw(screen):
-        screen.fill((0, 0, 0))
-        font = pygame.font.Font(None, 50)
-        text = font.render("Welcome to hell!", True, (255, 0, 0))
-        text_x = width // 2 - text.get_width() // 2
-        text_y = height // 2 - text.get_height() // 2
-        screen.blit(text, (text_x, text_y))
+def pixiles(screen):
+    for i in range(10000):
+        screen.fill(pygame.Color('white'),
+                    (random.random() * width,
+                     random.random() * height, 1, 1))
 
-
-    def pixiles(screen):
-        for i in range(10000):
-            screen.fill(pygame.Color('white'),
-                        (random.random() * width,
-                         random.random() * height, 1, 1))
-
-
+def start_screen(screen):
     all_sprites = pygame.sprite.Group()
 
     # Кнопка первого уровня
@@ -105,22 +99,20 @@ if __name__ == '__main__':
     sprite8.rect.y = 0
     all_sprites.add(sprite8)
 
-
-
     running = True
-    start_time = time.time()
-
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                ENV.display_screen = None
+                return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if sprite.rect.collidepoint(mouse_pos):
                     # Вход в 1 уровень
                     print("сасиски1")
-                    level_1()
+                    ENV.display_screen = 1
+                    return
                 elif sprite2.rect.collidepoint(mouse_pos):
                     # Вход во 2 уровень
                     print("сасиски2")
@@ -143,15 +135,40 @@ if __name__ == '__main__':
                     # Вход в 8 уровень
                     print("сасиски8")
 
-        current_time = time.time()
-
-        if current_time - start_time <= 3:
-            draw(screen)
-            pixiles(screen)
-        else:
-            screen.fill((0, 0, 0))
-            all_sprites.draw(screen)
-
+        screen.fill((0, 0, 0))
+        all_sprites.draw(screen)
         pygame.display.flip()
+
+def welcome_screen(screen):
+    start_time = time.time()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                ENV.display_screen = None
+                return
+
+        draw(screen)
+        pixiles(screen)
+        pygame.display.flip()
+
+        current_time = time.time()
+        if current_time - start_time > 3:
+            running = False
+            ENV.display_screen = 0
+
+if __name__ == '__main__':
+    pygame.init()
+    size = width, height = 800, 600
+    screen = pygame.display.set_mode(size)
+
+
+    welcome_screen(screen)
+
+    while ENV.display_screen is not None:
+        if ENV.display_screen == 0:
+            start_screen(screen)
+        else:
+            level_1.level_1(screen)
 
     pygame.quit()

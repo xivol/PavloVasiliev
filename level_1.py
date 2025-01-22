@@ -1,5 +1,6 @@
 import pygame
 import sys
+from enviroment import ENV
 
 pygame.init()
 
@@ -41,7 +42,7 @@ def draw_start_end():
     pygame.draw.rect(screen, START_COLOR, start_point)
     pygame.draw.rect(screen, END_COLOR, end_point)
 
-def game_over_screen():
+def game_over_screen(screen):
     screen.fill(GAME_OVER_COLOR)
     font = pygame.font.Font(None, 74)
     text = font.render("Игра окончена!", True, (255, 255, 255))
@@ -49,15 +50,19 @@ def game_over_screen():
     screen.blit(text, text_rect)
     pygame.display.flip()
     pygame.time.delay(3000)
+    ENV.display_screen = 0
 
-def level_1():
+
+def level_1(screen):
     clock = pygame.time.Clock()
     running = True
+    player_pos[0], player_pos[1] = start_point.topleft
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                ENV.display_screen = None
+                return
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
@@ -73,8 +78,9 @@ def level_1():
 
         for wall in walls:
             if player_rect.colliderect(wall):
-                game_over_screen()
-                player_pos[0], player_pos[1] = start_point.topleft
+                game_over_screen(screen)
+                ENV.display_screen = 1
+                return
 
         if player_rect.colliderect(end_point):
             screen.fill((0, 128, 0))
@@ -85,6 +91,8 @@ def level_1():
             pygame.display.flip()
             pygame.time.delay(3000)
             running = False
+            ENV.display_screen = 0
+            return
 
         screen.fill(BACKGROUND_COLOR)
         draw_walls()
@@ -98,4 +106,4 @@ def level_1():
     sys.exit()
 
 if __name__ == "__main__":
-    level_1()
+    level_1(screen)
