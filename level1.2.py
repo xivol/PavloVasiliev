@@ -44,10 +44,10 @@ class AnimatedSprite(pygame.sprite.Sprite):
             self.image = self.frames[self.cur_frame]
 
 
-# Load your sprite sheet image
-dragon_sheet = load_image("AnimationSheet_Character.png")  # Ensure this function is defined elsewhere
-dragon = AnimatedSprite(dragon_sheet, 8, 1, 50, 50)
 
+dragon_sheet = load_image("AnimationSheet_Character.png") 
+dragon = AnimatedSprite(dragon_sheet, 8, 1, 50, 50)
+background_image = load_image("back.jpg")
 # Game settings
 WIDTH, HEIGHT = 800, 600
 FPS = 60
@@ -133,7 +133,7 @@ def level_1(screen):
             ENV.display_screen = 0
             return
 
-        screen.fill(BACKGROUND_COLOR)
+        screen.blit(background_image ,(0 ,0 ))
         draw_walls()
         draw_start_end()
 
