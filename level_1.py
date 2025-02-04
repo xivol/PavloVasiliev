@@ -1,6 +1,6 @@
 import pygame
 import sys
-from enviroment import ENV
+from enviroment import ENV, Block, Movable_Block
 
 pygame.init()
 
@@ -57,7 +57,7 @@ def level_1(screen):
     clock = pygame.time.Clock()
     running = True
     player_pos[0], player_pos[1] = start_point.topleft
-
+    tst = Movable_Block(pos=(100, 50), velocity=(0, 7))
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,9 +95,12 @@ def level_1(screen):
             return
 
         screen.fill(BACKGROUND_COLOR)
+
+
         draw_walls()
         draw_start_end()
         draw_player()
+        tst.draw(screen)
         pygame.display.flip()
 
         clock.tick(FPS)
