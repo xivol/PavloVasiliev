@@ -105,7 +105,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Лабиринт в аду")
 
 walls = [
-    pygame.Rect(300, 300, 200, 20)
+    pygame.Rect(50, 100, 100, 20),
+    pygame.Rect(200, 100, 100, 20)
 ]
 
 start_point = pygame.Rect(50, 50, 50, 50)
@@ -113,7 +114,7 @@ end_point = pygame.Rect(700, 500, 50, 50)
 
 # Create a single dragon character
 dragon = AnimatedSprite(dragon_sheet1, 8, 1, 50, 50)
-fire = FireSprite(fire_sheet, 9, 1, 100, 100)  # Создаем спрайт огня
+fire = FireSprite(fire_sheet, 9, 1, 150, 50)  # Создаем спрайт огня
 fire.rect.width = 100
 fire.rect.height = 100
 
@@ -172,6 +173,19 @@ def level_1(screen):
             ENV.display_screen = 1
             return
 
+        for wall in walls:
+            if player_rect.colliderect(wall):
+                if keys[pygame.K_d]:
+                    player_rect.right = wall.left
+                elif keys[pygame.K_a]:
+                    player_rect.left = wall.right
+                elif keys[pygame.K_w]:
+                    player_rect.top = wall.bottom
+                elif keys[pygame.K_s]:
+                    player_rect.bottom = wall.top
+
+
+        dragon.rect = player_rect
 
         # Проверка на достижение конечной точки
         if player_rect.colliderect(end_point):
@@ -200,6 +214,8 @@ def level_1(screen):
 
     pygame.quit()
     sys.exit()
+
+
 
 
 
