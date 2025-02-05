@@ -44,50 +44,53 @@ class AnimatedSprite(pygame.sprite.Sprite):
             else:
                 self.image = self.frames[self.cur_frame]
 
-# FireSprite class definition
+
 class FireSprite(pygame.sprite.Sprite):
     def __init__(self, sheet, columns, rows, x, y):
         super().__init__(all_sprites)
+        self.moving = False
+        self.left = False
         self.frames = []
         self.cut_sheet(sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.image.get_rect(topleft=(x, y))
-        self.alpha = 0  # Начальная прозрачность
-        self.alpha_speed = 2  # Скорость изменения прозрачности
-        self.fading_in = True  # Флаг для определения направления изменения прозрачности
+        self.animation_speed = 0.1  # Скорость анимации
+        self.last_update = pygame.time.get_ticks()
 
     def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
-                                sheet.get_height() // rows)
+        frame_width = sheet.get_width() // columns
+        frame_height = sheet.get_height() // rows
+        self.rect = pygame.Rect(0, 0, frame_width, frame_height)
+
         for j in range(rows):
             for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location, self.rect.size)))
+                frame_location = (frame_width * i, frame_height * j)
+                # Убедитесь, что вы не выходите за пределы изображения
+                if (frame_location[0] + frame_width <= sheet.get_width() and
+                        frame_location[1] + frame_height <= sheet.get_height()):
+                    self.frames.append(sheet.subsurface(pygame.Rect(
+                        frame_location, self.rect.size)))
 
     def update(self):
-        # Изменение прозрачности
-        if self.fading_in:
-            self.alpha += self.alpha_speed
-            if self.alpha >= 255:
-                self.alpha = 255
-                self.fading_in = False
-        else:
-            self.alpha -= self.alpha_speed
-            if self.alpha <= 0:
-                self.alpha = 0
-                self.fading_in = True
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 99:
+            self.last_update = now
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            if self.left:
+                self.image = pygame.transform.flip(self.frames[self.cur_frame], True, False)
+            else:
+                self.image = self.frames[self.cur_frame]
 
-        # Применение прозрачности к текущему кадру
-        self.image = self.frames[self.cur_frame].copy()
-        self.image.set_alpha(self.alpha)
+        # Убедитесь, что у вашего изображения есть прозрачный фон
+        self.image.set_colorkey((0, 0, 0))  # Установите цвет ключа для прозрачности
+
 
 # Load images
 dragon_sheet1 = load_image("AnimationSheet_Character.png")
 dragon_sheet2 = load_image("AnimationSheet_Character2.png")
-background_image = load_image("back.webp")
-fire_sheet = load_image("fire.png")  # Загрузите ваш спрайт-лист для огня
+background_image = load_image("back.jpg")
+fire_sheet = load_image("ff-Photoroom.png")
 
 # Game settings
 WIDTH, HEIGHT = 800, 600
@@ -110,7 +113,9 @@ end_point = pygame.Rect(700, 500, 50, 50)
 
 # Create a single dragon character
 dragon = AnimatedSprite(dragon_sheet1, 8, 1, 50, 50)
-fire = FireSprite(fire_sheet, 4, 1, 50, 50)  # Создаем спрайт огня
+fire = FireSprite(fire_sheet, 9, 1, 100, 100)  # Создаем спрайт огня
+fire.rect.width = 100
+fire.rect.height = 100
 
 def draw_walls():
     for wall in walls:
@@ -144,16 +149,10 @@ def level_1(screen):
             dragon.rect.x += 5
             dragon.left = False
             dragon.moving = True
-            # # Change to dragon1 sprite sheet
-            # dragon.frames = []
-            # dragon.cut_sheet(dragon_sheet1, 8, 1)
         elif keys[pygame.K_a]:  # Move left
             dragon.rect.x -= 5
             dragon.left = True
             dragon.moving = True
-            # Change to dragon2 sprite sheet
-            # dragon.frames = []
-            # dragon.cut_sheet(dragon_sheet2, 8, 1)
         elif keys[pygame.K_w]:  # Move up
             dragon.rect.y -= 5
             dragon.moving = True
@@ -167,12 +166,14 @@ def level_1(screen):
 
         player_rect = dragon.rect.copy()
 
-        for wall in walls:
-            if player_rect.colliderect(wall):
-                game_over_screen(screen)
-                ENV.display_screen = 1
-                return
+        # Проверка на столкновение с огнем
+        if player_rect.colliderect(fire.rect):
+            game_over_screen(screen)
+            ENV.display_screen = 1
+            return
 
+
+        # Проверка на достижение конечной точки
         if player_rect.colliderect(end_point):
             screen.fill((0, 128, 0))
             font = pygame.font.Font(None, 74)
@@ -199,6 +200,9 @@ def level_1(screen):
 
     pygame.quit()
     sys.exit()
+
+
+
 
 if __name__ == "__main__":
     level_1(screen)
