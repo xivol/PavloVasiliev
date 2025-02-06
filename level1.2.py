@@ -7,6 +7,7 @@ pygame.init()
 # Initialize all_sprites group
 all_sprites = pygame.sprite.Group()
 
+
 def load_image(filename):
     try:
         image = pygame.image.load(filename)
@@ -14,6 +15,7 @@ def load_image(filename):
     except pygame.error as e:
         print(f"Не удалось загрузить изображение: {filename}. Ошибка: {e}")
         sys.exit()
+
 
 # AnimatedSprite class definition
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -25,6 +27,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.cut_sheet(sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def cut_sheet(self, sheet, columns, rows):
@@ -43,6 +46,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
                 self.image = pygame.transform.flip(self.frames[self.cur_frame], True, False)
             else:
                 self.image = self.frames[self.cur_frame]
+            self.mask = pygame.mask.from_surface(self.image)
 
 
 class FireSprite(pygame.sprite.Sprite):
@@ -54,6 +58,7 @@ class FireSprite(pygame.sprite.Sprite):
         self.cut_sheet(sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(topleft=(x, y))
         self.animation_speed = 0.1  # Скорость анимации
         self.last_update = pygame.time.get_ticks()
@@ -81,9 +86,7 @@ class FireSprite(pygame.sprite.Sprite):
                 self.image = pygame.transform.flip(self.frames[self.cur_frame], True, False)
             else:
                 self.image = self.frames[self.cur_frame]
-
-        # Убедитесь, что у вашего изображения есть прозрачный фон
-        self.image.set_colorkey((0, 0, 0))  # Установите цвет ключа для прозрачности
+            self.mask = pygame.mask.from_surface(self.image)
 
 
 # Load images
@@ -115,16 +118,19 @@ end_point = pygame.Rect(700, 500, 50, 50)
 # Create a single dragon character
 dragon = AnimatedSprite(dragon_sheet1, 8, 1, 50, 50)
 fire = FireSprite(fire_sheet, 9, 1, 150, 50)  # Создаем спрайт огня
-fire.rect.width = 100
-fire.rect.height = 100
+# fire.rect.width = 100
+# fire.rect.height = 100
+
 
 def draw_walls():
     for wall in walls:
         pygame.draw.rect(screen, WALL_COLOR, wall)
 
+
 def draw_start_end():
     pygame.draw.rect(screen, START_COLOR, start_point)
     pygame.draw.rect(screen, END_COLOR, end_point)
+
 
 def game_over_screen(screen):
     screen.fill(GAME_OVER_COLOR)
@@ -135,6 +141,7 @@ def game_over_screen(screen):
     pygame.display.flip()
     pygame.time.delay(3000)
     ENV.display_screen = 0
+
 
 def level_1(screen):
     clock = pygame.time.Clock()
@@ -166,9 +173,10 @@ def level_1(screen):
             dragon.moving = False
 
         player_rect = dragon.rect.copy()
-
         # Проверка на столкновение с огнем
-        if player_rect.colliderect(fire.rect):
+        if pygame.sprite.collide_mask(dragon, fire):
+        #if player_rect.colliderect(fire.rect):
+            print(player_rect, fire.rect)
             game_over_screen(screen)
             ENV.display_screen = 1
             return
@@ -183,7 +191,6 @@ def level_1(screen):
                     player_rect.top = wall.bottom
                 elif keys[pygame.K_s]:
                     player_rect.bottom = wall.top
-
 
         dragon.rect = player_rect
 
@@ -204,6 +211,11 @@ def level_1(screen):
         draw_walls()
         draw_start_end()
 
+
+        pygame.draw.rect(screen, "green", player_rect, width=1)
+        pygame.draw.rect(screen, "green", fire.rect, width=1)
+
+
         # Update and draw all sprites
         all_sprites.update()
         all_sprites.draw(screen)
@@ -214,10 +226,6 @@ def level_1(screen):
 
     pygame.quit()
     sys.exit()
-
-
-
-
 
 
 if __name__ == "__main__":
